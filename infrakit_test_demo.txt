@@ -1,25 +1,37 @@
-// infrakit better test demo
-//    Started the plugins and learned to access them
-//    Created a configuration for a group we wanted to manage
-//    Verified the instances created matched the specifications
-//    Updated the configurations of the group and scaled up the group
-//    Reviewed the proposed changes
-//    Applied the update across the group
-//    Removed some instances and observed that the group self-healed
-//    Destroyed the group
+// infrakit: better test demo
 
+// you only need docker for this demo
+
+//    Start the plugins and learn to access them
+//    Create a configuration for a group we wanted to manage
+//    Verify the instances created matche the specifications
+//    Update the configurations of the group and scale up the group
+//    Review the propose changes
+//    Apply the update across the group
+//    Remove some instances and observed that the group self-heales
+//    Destroy the group
+
+
+// optionally build your own container by (this can take a bit):
+git clone https://github.com/docker/infrakit.git
+git checkout release-0.4.1
+cd infrakti
+make build-docker
+
+// or just search on dockerhub for infrakit 
+// e.g. chungers/infrakit-bundle (is mostlikely not the latest release)
 
 // start container
 docker run -it chungers/infrakit-bundle /bin/sh
 
-//    Started the plugins and learned to access them
+//    Start the plugins and learn to access them
 mkdir -p tut
 infrakit-group-default &
 infrakit-instance-file --dir ./tut &
 infrakit-flavor-vanilla &
 infrakit plugin ls
 
-//    Created a configuration for a group we wanted to manage
+//    Create a configuration for a group we want to manage
 vi cattle.json
 {
   "ID": "cattle",
@@ -49,13 +61,13 @@ vi cattle.json
   }
 }
 
-//    Verified the instances created matched the specifications
+//    Verify the instances created matche the specifications
 infrakit instance describe --name infrakit-instance-file
 infrakit group watch cattle.json --name infrakit-group-default
 infrakit group describe cattle.json --name infrakit-group-default
 infrakit instance describe --name infrakit-instance-file
 
-//    Updated the configurations of the group and scaled up the group
+//    Update the configurations of the group and scale up the group
 infrakit group unwatch cattle.json --name infrakit-group-default
 infrakit group watch cattle.json --name infrakit-group-default
 infrakit group describe-groups --name infrakit-group-default
@@ -88,24 +100,24 @@ vi cattle2.json
   }
 }
 
-//    Reviewed the proposed changes
+//    Review the propose changes
 diff cattle.json cattle2.json
 
-//    Applied the update across the group
+//    Apply the update across the group
 infrakit group update cattle2.json --name infrakit-group-default
 infrakit group describe cattle --name infrakit-group-default
 
-//    Removed some instances and observed that the group self-healed
+//    Remov some instances and observe that the group self-healed
 rm tut/...
 
-//    Destroyed the group
+//    Destroy the group
 infrakit group destroy cattle --name infrakit-group-default
 
 =======================================
 
 // Infrakit test demo
-// startet ubuntu in docker mit infrakit installation
-// lädt alle plugins und startet 5 instancen
+// starte ubuntu in docker with infrakit installation
+// loads some plugins and starts 5 instances
 
 
 // 1. start container with infrakit install
@@ -130,8 +142,7 @@ docker exec -i -t ajeetraina/infrakit build/infrakit-flavor-vanilla
 // 7. start group plugin
 docker exec -i -t ajeetraina/infrakit build/infrakit-group-default
 
-// 
-//build/infrakit instance describe —-name=collabnix-instance
+//build/infrakit instance describe --name=collabnix-instance
 
 // 8. start watching group
 docker exec -i -t ajeetraina/infrakit build/infrakit group watch collabnix.json
@@ -148,51 +159,70 @@ ls collabnix
 
 
 
-// Fragen zu Infrakit
-how to end infrakit
-how to make a plugin/does a plugin has to be in go
-what are all the tags for plugin json config
+// questions about Infrakit
+how to gracfully end infrakit?
+just make sure you destroy all groups before killing or CTRL+C it
+
+how to make a plugin?
+look at other plugins and learn how to do it
+e.g.: github.com/docker/infrakit/example/
+or: github.com/docker/infrakit.aws
+
+does a plugin has to be in go?
+no, if you understand how a plugin works youll see
+look at: github.com/docker/infrakit/docs/plugins
+
+what are all the tags for plugin json config?
+
+
 what is infrakit for?
-	ein toolkit für infrastruktur orchestration
-	cluster infrastruktur einfach und porabel machen
-	managen von low level infrastruktur für jedes mögliche cluster
-	"scaling groups" health managemant für instancen
+	a toolkit for infrastruktur orchestration
+	make cluster infrastructur simple and portable (like a docker container)
+	manage low level infrastructur for every posible cluster
+	"scaling groups" health managemant for instances
 	make it easyer to install docker on a veriaty of environments
 	cloudproviders, common plattforms
-	a toolkit for infrastructur orchestration
-what is infrakit not
+what is infrakit NOT 
 	coupled to docker
 	a configuration managment system (e.g Terraform)
-	alternative zu Swarm/Kubernetes(wie machst du dein cluster setup->infrakit)
-Was macht infrakit besonders
-	benutzer definiert wie cluster aussehen soll, 
-		ifrakit sagt wie es diesen Zustand erreicht
-	es schaut konstant ob dieser definierte zustand noch ist
-	immutable??? => plugins
+	alternative zu Swarm/Kubernetes (infrakit answers the question: how do you do your cluster setup->infrakit)
+what is special about infrakit
+	its declerative, user defines how cluster should look like
+		infrakit does everything to reach this state
+	it constantly tests whether the cluster state matches the declared state
+	(immutable??? => plugins)
 	roling update
-Plugins (siehe bild infrakit_plugin_example)
+deffernt kinds of plugins 
 	instance
-		eine resourcen einheit z.B. EC2 instance
+		a resource entity e.g. EC2 instance
 		how to create, delete, list resourcen
 	group
-		zusammenfassung von instancen
-		managen von einer group als eine resource (auto scaling group nutzen)
+		combines instances to groups
+		manage a group as a single resource (use auto scaling group)
 	flavor
-		modifizieren einer instance
+		modify a instance
 		z.B. etwas configurieren, installieren, swarm join
-	infrakit versteht nur group plugins, 
-		alle anderen plugins basieren auf default groupplugin
-flavor-vanilla plugin: injects code to an instance
+		e.g. configure/install something, swarm join
 
-Konkurenz:
-	AWS cloud formation, erreicht einpaar ziele wie infrakit aber AWS spezifisch
-unterschied swarm -- infrakit
+	infrakit nativly only understands group plugins,
+		all other plugins are based on default_group_plugin
+	flavor-vanilla plugin: injects code to an instance
+
+compareable alternatives:
+	AWS cloud formation, reaches some goal that infrakit does but AWS specific
+difference swarm -- infrakit
 	swarm:
-		services, netzwerk, application management
+		services, netzwork, application management
 	infrakit:
-		plattform unabhängiger weg diese features up zu setten
+		platform indepentant way of setting up features
+
+	infrakit uses a flavor swarm plugin to use swarm in its configuration
+
+difference terraform -- infrakit
 	terraform:
-		einzelne maschinen
+		single machines
 	infrakit:
-		gruppen von meherern maschinene, clusters
-		aktives management
+		groups of many machines, clusters
+		active management
+
+	infrakit also provides an instance terraform plugin
