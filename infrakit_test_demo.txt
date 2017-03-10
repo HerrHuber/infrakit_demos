@@ -14,8 +14,8 @@
 
 // optionally build your own container by (this can take a bit):
 git clone https://github.com/docker/infrakit.git
-git checkout release-0.4.1
 cd infrakti
+git checkout release-0.4.1
 make build-docker
 
 // or just search on dockerhub for infrakit 
